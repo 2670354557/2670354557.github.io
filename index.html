@@ -12,72 +12,95 @@
     margin: 0; min-height: 100vh; display: flex; flex-direction: column;
     align-items: center; justify-content: center; background: #111111;
     font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
-    padding: 24px; text-align: center; color: #eee; user-select: none; overflow: hidden;
-  }
-  .main-view { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s; }
-  .money-label { font-size: 16px; color: #888; margin-bottom: 8px; letter-spacing: 2px; }
-  .money-display {
-    font-size: 64px; font-weight: 900; color: #4cd964;
-    font-variant-numeric: tabular-nums; text-shadow: 0 0 25px rgba(76, 217, 100, 0.3);
-    line-height: 1.1; margin-bottom: 16px;
-  }
-  .money-display span { font-size: 32px; margin-right: 4px; }
-  .time-status {
-    font-size: 15px; color: #aaa; background: #222;
-    padding: 8px 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #333;
+    padding: 20px; text-align: center; color: #eee; user-select: none; overflow: hidden;
   }
   
-  /* 摸鱼按钮区域 */
-  .fish-area {
-    display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;
+  /* 顶部进度条 */
+  .progress-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #222; z-index: 50;
   }
+  .progress-bar {
+    height: 100%; background: #4cd964; width: 0%;
+    box-shadow: 0 0 10px rgba(76, 217, 100, 0.8); transition: width 1s linear;
+  }
+
+  .main-view { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s; }
+  
+  .money-label { font-size: 15px; color: #888; margin-bottom: 5px; letter-spacing: 2px; }
+  .money-display {
+    font-size: 68px; font-weight: 900; color: #4cd964;
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(76, 217, 100, 0.4);
+    line-height: 1.1; margin-bottom: 12px;
+    animation: breathe 2s infinite alternate;
+  }
+  @keyframes breathe { 0% { text-shadow: 0 0 20px rgba(76,217,100,0.2); } 100% { text-shadow: 0 0 40px rgba(76,217,100,0.7); } }
+  .money-display span { font-size: 32px; margin-right: 4px; }
+  
+  .time-status {
+    font-size: 14px; color: #aaa; background: #222;
+    padding: 6px 16px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #333;
+  }
+
+  /* 摸鱼专区 */
+  .fish-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
   .fish-btn {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-    color: #d81b60; border: none; padding: 12px 28px; border-radius: 30px;
-    font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
-    transition: transform 0.1s, box-shadow 0.1s; display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%);
+    color: #d81b60; border: none; padding: 14px 32px; border-radius: 30px;
+    font-size: 18px; font-weight: bold; cursor: pointer; 
+    box-shadow: 0 6px 20px rgba(255, 154, 158, 0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
   }
-  .fish-btn:active { transform: scale(0.92); box-shadow: 0 2px 5px rgba(255, 154, 158, 0.4); }
+  .fish-btn:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(255, 154, 158, 0.4); }
   .fish-count-text { font-size: 13px; color: #ff9a9e; margin-top: 12px; font-weight: 500; }
 
-  .cheer-text { font-size: 16px; color: #d4b584; line-height: 1.6; max-width: 280px; min-height: 50px; font-weight: 500; }
-  .top-bar { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; }
+  .cheer-text { font-size: 15px; color: #d4b584; line-height: 1.6; max-width: 280px; min-height: 50px; font-weight: 500; }
+  
+  .top-bar { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; z-index: 60; }
   .icon-btn { background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 8px; transition: 0.2s; }
   .icon-btn:active { color: #4cd964; transform: scale(0.9); }
+
+  /* 设置面板 */
   .settings-panel {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #111; z-index: 100; padding: 30px 24px; display: flex; flex-direction: column;
-    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(17, 17, 17, 0.98); z-index: 100; padding: 30px 24px; display: flex; flex-direction: column;
+    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
   }
   .settings-panel.show { transform: translateY(0); }
-  .settings-title { font-size: 20px; font-weight: bold; margin-bottom: 24px; text-align: left; color: #fff; }
-  .input-group { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
-  .input-group label { font-size: 15px; color: #aaa; }
-  .input-group input { width: 110px; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #111; color: #4cd964; font-size: 18px; text-align: right; font-weight: bold; outline: none; }
-  .save-btn { margin-top: auto; background: #4cd964; color: #111; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; }
+  .settings-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; text-align: left; color: #fff; }
+  .input-group { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 14px; border-radius: 12px; margin-bottom: 10px; }
+  .input-group label { font-size: 14px; color: #aaa; }
+  .input-group input { width: 120px; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #111; color: #4cd964; font-size: 16px; text-align: right; font-weight: bold; outline: none; }
+  .save-btn { margin-top: 20px; background: #4cd964; color: #111; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 30px;}
   .save-btn:active { opacity: 0.8; }
+  .holiday-notice { font-size: 12px; color: #f39c12; margin-top: -10px; margin-bottom: 20px; text-align: left;}
 
-  /* 摸鱼飘字动画 */
+  /* 摸鱼飘字特效 */
   .float-text {
-    position: fixed; color: #4cd964; font-weight: bold; font-size: 24px; pointer-events: none;
-    animation: floatUp 0.8s ease-out forwards; z-index: 999;
+    position: fixed; color: #ff9a9e; font-weight: bold; font-size: 22px; pointer-events: none;
+    animation: floatUp 1s ease-out forwards; z-index: 999; text-shadow: 0 0 10px rgba(255,154,158,0.5);
   }
   @keyframes floatUp {
     0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
   }
 </style>
 </head>
 <body>
+
+  <!-- 顶部进度条 -->
+  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+
   <div class="top-bar">
     <button class="icon-btn" id="openSettings">⚙️</button>
   </div>
+
   <div class="main-view">
     <div class="money-label">今日已赚 (元)</div>
     <div class="money-display" id="moneyDisplay"><span>¥</span>0.00</div>
     <div class="time-status" id="timeStatus">计算中...</div>
     
-    <!-- 新增的摸鱼区 -->
+    <!-- 摸鱼打卡区 -->
     <div class="fish-area">
       <button class="fish-btn" id="fishBtn">🐟 摸鱼打卡</button>
       <div class="fish-count-text">今日已带薪摸鱼 <span id="fishCount" style="font-size:16px; color:#ff9a9e;">0</span> 次</div>
@@ -86,37 +109,32 @@
     <div class="cheer-text" id="cheerText">打工人的每一秒，都在为未来的自由铺路。</div>
   </div>
   
+  <!-- 设置面板 -->
   <div class="settings-panel" id="settingsPanel">
-    <div class="settings-title">⚙️ 薪资与时间设置</div>
+    <div class="settings-title" id="settingsTitle">⚙️ 薪资与时间设置</div>
+    <div class="holiday-notice" id="holidayNotice" style="display: none;"></div>
+    
     <div class="input-group"><label>月薪 (元)</label><input type="number" id="salary" value="10000"></div>
     <div class="input-group"><label>每月上班 (天)</label><input type="number" id="workDays" value="22"></div>
     <div class="input-group"><label>上班时间</label><input type="time" id="startTime" value="09:00"></div>
     <div class="input-group"><label>下班时间</label><input type="time" id="endTime" value="18:00"></div>
     <div class="input-group"><label>午休开始</label><input type="time" id="lunchStart" value="12:00"></div>
     <div class="input-group"><label>午休结束</label><input type="time" id="lunchEnd" value="13:00"></div>
+    
     <button class="save-btn" id="closeSettings">保存并开始</button>
   </div>
 
 <script>
+  // 注册 Service Worker
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW注册失败', err));
-    });
+    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(console.warn); });
   }
 
-  const cheers = {
-    morning: ["刚泡好咖啡，今天也是带薪拉屎的一天。", "只要我不抬头，工作就找不到我。", "距离午饭还有一会，稳住。"],
-    afternoon: ["最难熬的下午来了，深呼吸，工资在跳。", "下午三点，喝杯水，提提神。", "快熬过最累的时候了，钱一分没少赚。"],
-    evening: ["准备冲刺下班！", "收拾一下桌面，体面地结束今天。", "马上就自由了，再忍忍。"],
-    lunch: ["干饭时间，带薪休息最香。", "吃饱喝足，下午再战。", "午休是为了更好的摸鱼。"],
-    offwork: ["今日已下班，快逃！", "下班不积极，思想有问题。", "带薪的一天结束了，明天再来。"],
-    weekend: ["周末快乐，搞什么钱，去玩！", "今天休息，别想工作的事。", "不上班的日子，连空气都是甜的。"]
-  };
-
-  function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  // --- 状态与数据 ---
   const elMoney = document.getElementById('moneyDisplay');
   const elStatus = document.getElementById('timeStatus');
   const elCheer = document.getElementById('cheerText');
+  const elProgress = document.getElementById('progressBar');
   const panel = document.getElementById('settingsPanel');
   const elFishCount = document.getElementById('fishCount');
 
@@ -126,65 +144,108 @@
     lStart: document.getElementById('lunchStart'), lEnd: document.getElementById('lunchEnd')
   };
 
-  const savedConfig = JSON.parse(localStorage.getItem('workerClockConfig')) || {};
-  for (let key in inputs) { if (savedConfig[key]) inputs[key].value = savedConfig[key]; }
-
-  function timeToMinutes(timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + m;
+  // 缓存配置
+  const savedConfig = JSON.parse(localStorage.getItem('workerClockConfig'));
+  if (savedConfig) {
+    for (let key in inputs) { if (savedConfig[key]) inputs[key].value = savedConfig[key]; }
+  } else {
+    // 首次打开，自动弹出设置
+    setTimeout(() => panel.classList.add('show'), 500);
   }
 
-  let timer = null;
-  let lastCheerTime = 0;
-
-  // --- 摸鱼功能逻辑 ---
+  // --- 摸鱼逻辑 ---
   let fishCount = parseInt(localStorage.getItem('fishCount')) || 0;
   let fishDate = localStorage.getItem('fishDate');
   const todayStr = new Date().toDateString();
-
-  // 如果是新的一天，重置摸鱼次数
   if (fishDate !== todayStr) {
-    fishCount = 0;
-    localStorage.setItem('fishDate', todayStr);
-    localStorage.setItem('fishCount', fishCount);
+    fishCount = 0; localStorage.setItem('fishDate', todayStr); localStorage.setItem('fishCount', 0);
   }
   elFishCount.textContent = fishCount;
 
-  // 摸鱼按钮点击事件
+  const fishMessages = [
+    "小摸一下，带薪喝水。", "带薪拉屎，赚翻了！", "老板看不见，摸鱼最安全。", 
+    "摸鱼一时爽，一直摸鱼一直爽。", "你的工资里，有一半是受气费，另一半是摸鱼费。",
+    "生产队的驴都不敢这么歇！", "你是在摸鱼，还是在带薪思考人生？"
+  ];
+
   document.getElementById('fishBtn').addEventListener('click', (e) => {
     fishCount++;
     elFishCount.textContent = fishCount;
     localStorage.setItem('fishCount', fishCount);
 
-    // 震动反馈
-    if (navigator.vibrate) navigator.vibrate(30);
+    // 震动反馈 (不同频率)
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
 
     // 飘字特效
     const floatEl = document.createElement('div');
     floatEl.className = 'float-text';
     floatEl.textContent = '+1 摸鱼';
     
-    // 获取按钮在屏幕上的位置，让文字从按钮上方飘出
     const rect = e.target.getBoundingClientRect();
     floatEl.style.left = (rect.left + rect.width / 2 - 30) + 'px';
     floatEl.style.top = (rect.top - 10) + 'px';
-    
     document.body.appendChild(floatEl);
-    
-    // 动画结束后移除元素
-    setTimeout(() => {
-      floatEl.remove();
-    }, 800);
+    setTimeout(() => floatEl.remove(), 1000);
 
-    // 随机改变鼓励文案
-    const fishCheers = ["带薪摸鱼，赚翻了！", "摸鱼一时爽，一直摸鱼一直爽。", "工资照发，这波不亏。", "老板看不见，摸鱼最安全。"];
-    elCheer.textContent = getRandom(fishCheers);
+    // 每次摸鱼更换随机文案
+    elCheer.textContent = fishMessages[Math.floor(Math.random() * fishMessages.length)];
   });
-  // -------------------
 
-  function updateData() {
+  // --- 时间与计算逻辑 ---
+  function timeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  // 判断节假日/节气 (使用免费公开接口 + 本地缓存，防断网)
+  let isHoliday = false;
+  let holidayName = "";
+  async function checkHoliday() {
+    const date = new Date();
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    const cached = localStorage.getItem('holiday_' + dateStr);
+    
+    if (cached) {
+      const data = JSON.parse(cached);
+      isHoliday = data.isHoliday; holidayName = data.name;
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://timor.tech/api/holiday/info/${dateStr}`);
+      const data = await res.json();
+      if (data.code === 0) {
+        isHoliday = data.type.type !== 0 && data.type.type !== 3; // 1是周末，2是节日，3是调休上班
+        holidayName = data.type.name || (isHoliday ? '周末' : '');
+        
+        // 节气检测(只判断当天是否有节气提示)
+        if (data.holiday && data.holiday.name) holidayName = data.holiday.name;
+        
+        localStorage.setItem('holiday_' + dateStr, JSON.stringify({isHoliday, name: holidayName}));
+      }
+    } catch (e) {
+      // 断网时默认按周末判断
+      const day = date.getDay();
+      isHoliday = (day === 0 || day === 6);
+      holidayName = isHoliday ? "周末" : "";
+    }
+  }
+
+  let timer = null;
+  let lastCheerTime = 0;
+  const cheers = {
+    morning: ["刚泡好咖啡，今天也是带薪拉屎的一天。", "只要我不抬头，工作就找不到我。", "距离午饭还有一会，稳住。"],
+    afternoon: ["最难熬的下午来了，深呼吸，工资在跳。", "下午三点，喝杯水，提提神。", "快熬过最累的时候了，钱一分没少赚。"],
+    evening: ["准备冲刺下班！", "收拾一下桌面，体面地结束今天。", "马上就自由了，再忍忍。"],
+    lunch: ["干饭时间，带薪休息最香。", "吃饱喝足，下午再战。", "午休是为了更好的摸鱼。"],
+    offwork: ["今日已下班，快逃！", "下班不积极，思想有问题。", "带薪的一天结束了，明天再来。"],
+    weekend: ["周末/节假日快乐，搞什么钱，去玩！", "今天休息，别想工作的事。", "不上班的日子，连空气都是甜的。"]
+  };
+
+  async function updateData() {
+    await checkHoliday(); // 确保状态最新
+
     const now = new Date();
-    const day = now.getDay();
     const salary = parseFloat(inputs.salary.value) || 0;
     const workDays = parseFloat(inputs.workDays.value) || 22;
     const startM = timeToMinutes(inputs.start.value);
@@ -193,43 +254,60 @@
     const lEndM = timeToMinutes(inputs.lEnd.value);
     const currentM = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
 
+    // 每日总工作分钟数
     let totalWorkMinutes = (endM - startM) - (lEndM - lStartM);
     if (totalWorkMinutes <= 0) totalWorkMinutes = 1;
 
     const dailyPay = salary / workDays;
     const payPerMinute = dailyPay / totalWorkMinutes;
 
-    let earned = 0, statusText = "", state = "";
+    let earned = 0, statusText = "", state = "", progressPct = 0;
 
-    if (day === 0 || day === 6) {
-      earned = 0; statusText = "周末休息"; state = "weekend";
+    if (isHoliday) {
+      earned = 0; 
+      statusText = holidayName ? `${holidayName}快乐` : "今日休息";
+      state = "weekend";
+      progressPct = 100;
     } else if (currentM < startM) {
       earned = 0; statusText = "还没到上班时间"; state = "morning";
     } else if (currentM >= startM && currentM < lStartM) {
+      // 上午
       const workedM = currentM - startM;
       earned = workedM * payPerMinute;
       const remainM = endM - currentM;
       statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
       state = "morning";
+      progressPct = (workedM / totalWorkMinutes) * 100;
     } else if (currentM >= lStartM && currentM < lEndM) {
+      // 午休
       const workedM = lStartM - startM;
       earned = workedM * payPerMinute;
       statusText = "干饭时间，带薪休息"; state = "lunch";
+      progressPct = (workedM / totalWorkMinutes) * 100;
     } else if (currentM >= lEndM && currentM < endM) {
+      // 下午
       const workedM = (lStartM - startM) + (currentM - lEndM);
       earned = workedM * payPerMinute;
       const remainM = endM - currentM;
       statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
       state = "evening";
+      progressPct = (workedM / totalWorkMinutes) * 100;
     } else {
+      // 下班
       earned = dailyPay; statusText = "今日已下班，快逃！"; state = "offwork";
+      progressPct = 100;
     }
 
     elMoney.innerHTML = `<span>¥</span>${earned.toFixed(4)}`;
     elStatus.textContent = statusText;
+    elProgress.style.width = `${Math.min(progressPct, 100)}%`;
 
     if (Date.now() - lastCheerTime > 30000) {
-      elCheer.textContent = getRandom(cheers[state]);
+      if (state !== "weekend" && state !== "offwork") {
+        elCheer.textContent = cheers[state][Math.floor(Math.random() * cheers[state].length)];
+      } else if (lastCheerTime === 0) {
+         elCheer.textContent = cheers[state][Math.floor(Math.random() * cheers[state].length)];
+      }
       lastCheerTime = Date.now();
     }
   }
@@ -237,16 +315,22 @@
   function startTimer() {
     if (timer) clearInterval(timer);
     updateData();
-    timer = setInterval(updateData, 100);
+    timer = setInterval(updateData, 1000);
   }
 
-  document.getElementById('openSettings').addEventListener('click', () => panel.classList.add('show'));
+  // 设置面板交互
+  document.getElementById('openSettings').addEventListener('click', () => {
+    document.getElementById('settingsTitle').textContent = "⚙️ 薪资与时间设置";
+    panel.classList.add('show');
+  });
+
   document.getElementById('closeSettings').addEventListener('click', () => {
     const config = {};
     for (let key in inputs) config[key] = inputs[key].value;
     localStorage.setItem('workerClockConfig', JSON.stringify(config));
+    
     panel.classList.remove('show');
-    lastCheerTime = 0;
+    lastCheerTime = 0; // 强制刷新文案
     startTimer();
   });
 
