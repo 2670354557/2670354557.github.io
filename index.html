@@ -4,131 +4,106 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <title>打工人时钟</title>
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#111111">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    margin: 0; min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: #111111;
+    margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background: #111111;
     font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
-    padding: 24px; text-align: center; color: #eee;
-    user-select: none; overflow: hidden;
+    padding: 24px; text-align: center; color: #eee; user-select: none; overflow: hidden;
   }
-  
-  /* 主界面 */
   .main-view { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s; }
-  
   .money-label { font-size: 16px; color: #888; margin-bottom: 8px; letter-spacing: 2px; }
   .money-display {
     font-size: 64px; font-weight: 900; color: #4cd964;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 25px rgba(76, 217, 100, 0.3);
+    font-variant-numeric: tabular-nums; text-shadow: 0 0 25px rgba(76, 217, 100, 0.3);
     line-height: 1.1; margin-bottom: 16px;
   }
   .money-display span { font-size: 32px; margin-right: 4px; }
-  
   .time-status {
     font-size: 15px; color: #aaa; background: #222;
-    padding: 8px 20px; border-radius: 20px; margin-bottom: 30px;
-    border: 1px solid #333;
+    padding: 8px 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #333;
   }
+  
+  /* 摸鱼按钮区域 */
+  .fish-area {
+    display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;
+  }
+  .fish-btn {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+    color: #d81b60; border: none; padding: 12px 28px; border-radius: 30px;
+    font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+    transition: transform 0.1s, box-shadow 0.1s; display: flex; align-items: center; gap: 8px;
+  }
+  .fish-btn:active { transform: scale(0.92); box-shadow: 0 2px 5px rgba(255, 154, 158, 0.4); }
+  .fish-count-text { font-size: 13px; color: #ff9a9e; margin-top: 12px; font-weight: 500; }
 
-  .cheer-text {
-    font-size: 16px; color: #d4b584; line-height: 1.6;
-    max-width: 280px; min-height: 50px;
-    font-weight: 500;
-  }
-
-  /* 顶部控制 */
-  .top-bar {
-    position: absolute; top: 20px; right: 20px;
-    display: flex; gap: 15px;
-  }
-  .icon-btn {
-    background: none; border: none; color: #666; font-size: 24px; cursor: pointer;
-    padding: 8px; transition: 0.2s;
-  }
+  .cheer-text { font-size: 16px; color: #d4b584; line-height: 1.6; max-width: 280px; min-height: 50px; font-weight: 500; }
+  .top-bar { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; }
+  .icon-btn { background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 8px; transition: 0.2s; }
   .icon-btn:active { color: #4cd964; transform: scale(0.9); }
-
-  /* 设置面板（默认隐藏） */
   .settings-panel {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #111; z-index: 100;
-    padding: 30px 24px; display: flex; flex-direction: column;
+    background: #111; z-index: 100; padding: 30px 24px; display: flex; flex-direction: column;
     transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .settings-panel.show { transform: translateY(0); }
-  
   .settings-title { font-size: 20px; font-weight: bold; margin-bottom: 24px; text-align: left; color: #fff; }
-  
-  .input-group {
-    display: flex; align-items: center; justify-content: space-between;
-    background: #222; padding: 16px; border-radius: 12px; margin-bottom: 12px;
-  }
+  .input-group { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
   .input-group label { font-size: 15px; color: #aaa; }
-  .input-group input {
-    width: 110px; padding: 8px; border-radius: 8px;
-    border: 1px solid #444; background: #111; color: #4cd964;
-    font-size: 18px; text-align: right; font-weight: bold; outline: none;
-  }
-  
-  .save-btn {
-    margin-top: auto; background: #4cd964; color: #111;
-    border: none; padding: 18px; border-radius: 16px;
-    font-size: 18px; font-weight: bold; cursor: pointer;
-  }
+  .input-group input { width: 110px; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #111; color: #4cd964; font-size: 18px; text-align: right; font-weight: bold; outline: none; }
+  .save-btn { margin-top: auto; background: #4cd964; color: #111; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; }
   .save-btn:active { opacity: 0.8; }
+
+  /* 摸鱼飘字动画 */
+  .float-text {
+    position: fixed; color: #4cd964; font-weight: bold; font-size: 24px; pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards; z-index: 999;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+  }
 </style>
 </head>
 <body>
-
   <div class="top-bar">
     <button class="icon-btn" id="openSettings">⚙️</button>
   </div>
-
   <div class="main-view">
     <div class="money-label">今日已赚 (元)</div>
     <div class="money-display" id="moneyDisplay"><span>¥</span>0.00</div>
     <div class="time-status" id="timeStatus">计算中...</div>
+    
+    <!-- 新增的摸鱼区 -->
+    <div class="fish-area">
+      <button class="fish-btn" id="fishBtn">🐟 摸鱼打卡</button>
+      <div class="fish-count-text">今日已带薪摸鱼 <span id="fishCount" style="font-size:16px; color:#ff9a9e;">0</span> 次</div>
+    </div>
+
     <div class="cheer-text" id="cheerText">打工人的每一秒，都在为未来的自由铺路。</div>
   </div>
-
-  <!-- 设置面板 -->
+  
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-title">⚙️ 薪资与时间设置</div>
-    
-    <div class="input-group">
-      <label>月薪 (元)</label>
-      <input type="number" id="salary" value="10000">
-    </div>
-    <div class="input-group">
-      <label>每月上班 (天)</label>
-      <input type="number" id="workDays" value="22">
-    </div>
-    <div class="input-group">
-      <label>上班时间</label>
-      <input type="time" id="startTime" value="09:00">
-    </div>
-    <div class="input-group">
-      <label>下班时间</label>
-      <input type="time" id="endTime" value="18:00">
-    </div>
-    <div class="input-group">
-      <label>午休开始</label>
-      <input type="time" id="lunchStart" value="12:00">
-    </div>
-    <div class="input-group">
-      <label>午休结束</label>
-      <input type="time" id="lunchEnd" value="13:00">
-    </div>
-
+    <div class="input-group"><label>月薪 (元)</label><input type="number" id="salary" value="10000"></div>
+    <div class="input-group"><label>每月上班 (天)</label><input type="number" id="workDays" value="22"></div>
+    <div class="input-group"><label>上班时间</label><input type="time" id="startTime" value="09:00"></div>
+    <div class="input-group"><label>下班时间</label><input type="time" id="endTime" value="18:00"></div>
+    <div class="input-group"><label>午休开始</label><input type="time" id="lunchStart" value="12:00"></div>
+    <div class="input-group"><label>午休结束</label><input type="time" id="lunchEnd" value="13:00"></div>
     <button class="save-btn" id="closeSettings">保存并开始</button>
   </div>
 
 <script>
-  // 摸鱼文案库（根据时间段展示）
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW注册失败', err));
+    });
+  }
+
   const cheers = {
     morning: ["刚泡好咖啡，今天也是带薪拉屎的一天。", "只要我不抬头，工作就找不到我。", "距离午饭还有一会，稳住。"],
     afternoon: ["最难熬的下午来了，深呼吸，工资在跳。", "下午三点，喝杯水，提提神。", "快熬过最累的时候了，钱一分没少赚。"],
@@ -139,142 +114,143 @@
   };
 
   function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  // 元素获取
   const elMoney = document.getElementById('moneyDisplay');
   const elStatus = document.getElementById('timeStatus');
   const elCheer = document.getElementById('cheerText');
   const panel = document.getElementById('settingsPanel');
+  const elFishCount = document.getElementById('fishCount');
 
-  // 输入框
   const inputs = {
-    salary: document.getElementById('salary'),
-    workDays: document.getElementById('workDays'),
-    start: document.getElementById('startTime'),
-    end: document.getElementById('endTime'),
-    lStart: document.getElementById('lunchStart'),
-    lEnd: document.getElementById('lunchEnd')
+    salary: document.getElementById('salary'), workDays: document.getElementById('workDays'),
+    start: document.getElementById('startTime'), end: document.getElementById('endTime'),
+    lStart: document.getElementById('lunchStart'), lEnd: document.getElementById('lunchEnd')
   };
 
-  // 读取本地存储，如果没有则用默认值
   const savedConfig = JSON.parse(localStorage.getItem('workerClockConfig')) || {};
-  for (let key in inputs) {
-    if (savedConfig[key]) inputs[key].value = savedConfig[key];
-  }
+  for (let key in inputs) { if (savedConfig[key]) inputs[key].value = savedConfig[key]; }
 
-  // 时间转换函数："09:00" -> 540 (分钟)
   function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
   }
 
   let timer = null;
-  let lastCheerTime = 0; // 防止文案一秒变一次
+  let lastCheerTime = 0;
 
-  // 核心计算逻辑
+  // --- 摸鱼功能逻辑 ---
+  let fishCount = parseInt(localStorage.getItem('fishCount')) || 0;
+  let fishDate = localStorage.getItem('fishDate');
+  const todayStr = new Date().toDateString();
+
+  // 如果是新的一天，重置摸鱼次数
+  if (fishDate !== todayStr) {
+    fishCount = 0;
+    localStorage.setItem('fishDate', todayStr);
+    localStorage.setItem('fishCount', fishCount);
+  }
+  elFishCount.textContent = fishCount;
+
+  // 摸鱼按钮点击事件
+  document.getElementById('fishBtn').addEventListener('click', (e) => {
+    fishCount++;
+    elFishCount.textContent = fishCount;
+    localStorage.setItem('fishCount', fishCount);
+
+    // 震动反馈
+    if (navigator.vibrate) navigator.vibrate(30);
+
+    // 飘字特效
+    const floatEl = document.createElement('div');
+    floatEl.className = 'float-text';
+    floatEl.textContent = '+1 摸鱼';
+    
+    // 获取按钮在屏幕上的位置，让文字从按钮上方飘出
+    const rect = e.target.getBoundingClientRect();
+    floatEl.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+    floatEl.style.top = (rect.top - 10) + 'px';
+    
+    document.body.appendChild(floatEl);
+    
+    // 动画结束后移除元素
+    setTimeout(() => {
+      floatEl.remove();
+    }, 800);
+
+    // 随机改变鼓励文案
+    const fishCheers = ["带薪摸鱼，赚翻了！", "摸鱼一时爽，一直摸鱼一直爽。", "工资照发，这波不亏。", "老板看不见，摸鱼最安全。"];
+    elCheer.textContent = getRandom(fishCheers);
+  });
+  // -------------------
+
   function updateData() {
     const now = new Date();
-    const day = now.getDay(); // 0是周日，6是周六
-    
-    // 拿取配置
+    const day = now.getDay();
     const salary = parseFloat(inputs.salary.value) || 0;
     const workDays = parseFloat(inputs.workDays.value) || 22;
-    
     const startM = timeToMinutes(inputs.start.value);
     const endM = timeToMinutes(inputs.end.value);
     const lStartM = timeToMinutes(inputs.lStart.value);
     const lEndM = timeToMinutes(inputs.lEnd.value);
-    
     const currentM = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
 
-    // 每日总工作分钟数 = 下班 - 上班 - 午休时间
     let totalWorkMinutes = (endM - startM) - (lEndM - lStartM);
-    if (totalWorkMinutes <= 0) totalWorkMinutes = 1; // 防错
+    if (totalWorkMinutes <= 0) totalWorkMinutes = 1;
 
-    // 每秒赚多少钱 = 日薪 / (工作分钟 * 60)
     const dailyPay = salary / workDays;
     const payPerMinute = dailyPay / totalWorkMinutes;
-    const payPerSecond = payPerMinute / 60;
 
-    let earned = 0;
-    let statusText = "";
-    let state = "";
+    let earned = 0, statusText = "", state = "";
 
-    // 判断状态
     if (day === 0 || day === 6) {
-      // 周末
-      earned = 0;
-      statusText = "周末休息";
-      state = "weekend";
+      earned = 0; statusText = "周末休息"; state = "weekend";
     } else if (currentM < startM) {
-      // 还没上班
-      earned = 0;
-      statusText = "还没到上班时间";
-      state = "morning";
+      earned = 0; statusText = "还没到上班时间"; state = "morning";
     } else if (currentM >= startM && currentM < lStartM) {
-      // 上午上班
       const workedM = currentM - startM;
       earned = workedM * payPerMinute;
       const remainM = endM - currentM;
       statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
       state = "morning";
     } else if (currentM >= lStartM && currentM < lEndM) {
-      // 午休
       const workedM = lStartM - startM;
       earned = workedM * payPerMinute;
-      statusText = "干饭时间，带薪休息";
-      state = "lunch";
+      statusText = "干饭时间，带薪休息"; state = "lunch";
     } else if (currentM >= lEndM && currentM < endM) {
-      // 下午上班
       const workedM = (lStartM - startM) + (currentM - lEndM);
       earned = workedM * payPerMinute;
       const remainM = endM - currentM;
       statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
       state = "evening";
     } else {
-      // 下班了
-      earned = dailyPay;
-      statusText = "今日已下班，快逃！";
-      state = "offwork";
+      earned = dailyPay; statusText = "今日已下班，快逃！"; state = "offwork";
     }
 
-    // 更新金额显示
     elMoney.innerHTML = `<span>¥</span>${earned.toFixed(4)}`;
     elStatus.textContent = statusText;
 
-    // 每 30 秒或者状态改变时，刷新一句文案
     if (Date.now() - lastCheerTime > 30000) {
       elCheer.textContent = getRandom(cheers[state]);
       lastCheerTime = Date.now();
     }
   }
 
-  // 开启定时器：每 100 毫秒刷新一次，让数字看起来平滑
   function startTimer() {
     if (timer) clearInterval(timer);
-    updateData(); // 立即执行一次
+    updateData();
     timer = setInterval(updateData, 100);
   }
 
-  // 监听设置面板的开关
-  document.getElementById('openSettings').addEventListener('click', () => {
-    panel.classList.add('show');
-  });
-
+  document.getElementById('openSettings').addEventListener('click', () => panel.classList.add('show'));
   document.getElementById('closeSettings').addEventListener('click', () => {
-    // 保存配置
     const config = {};
     for (let key in inputs) config[key] = inputs[key].value;
     localStorage.setItem('workerClockConfig', JSON.stringify(config));
-    
     panel.classList.remove('show');
-    lastCheerTime = 0; // 强制刷新文案
-    startTimer(); // 重新开始计算
+    lastCheerTime = 0;
+    startTimer();
   });
 
-  // 初始化启动
   startTimer();
-
 </script>
 </body>
 </html>
