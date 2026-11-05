@@ -2,339 +2,798 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>打工人时钟</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111111">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    margin: 0; min-height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; background: #111111;
-    font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
-    padding: 20px; text-align: center; color: #eee; user-select: none; overflow: hidden;
-  }
-  
-  /* 顶部进度条 */
-  .progress-container {
-    position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #222; z-index: 50;
-  }
-  .progress-bar {
-    height: 100%; background: #4cd964; width: 0%;
-    box-shadow: 0 0 10px rgba(76, 217, 100, 0.8); transition: width 1s linear;
-  }
+:root{
+  --bg:#000;
+  --green:#00ff9d;
+  --pink:#ff6ba8;
+  --orange:#ff9a6b;
+  --gray:#8a8a8a;
+  --card:#101010;
+  --line:#1e1e1e;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{
+  margin:0;padding:0;height:100%;
+  background:var(--bg);color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  overflow:hidden;
+  user-select:none;
+}
+body{
+  display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 10px) 20px calc(env(safe-area-inset-bottom) + 18px);
+}
 
-  .main-view { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s; }
-  
-  .money-label { font-size: 15px; color: #888; margin-bottom: 5px; letter-spacing: 2px; }
-  .money-display {
-    font-size: 68px; font-weight: 900; color: #4cd964;
-    font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(76, 217, 100, 0.4);
-    line-height: 1.1; margin-bottom: 12px;
-    animation: breathe 2s infinite alternate;
-  }
-  @keyframes breathe { 0% { text-shadow: 0 0 20px rgba(76,217,100,0.2); } 100% { text-shadow: 0 0 40px rgba(76,217,100,0.7); } }
-  .money-display span { font-size: 32px; margin-right: 4px; }
-  
-  .time-status {
-    font-size: 14px; color: #aaa; background: #222;
-    padding: 6px 16px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #333;
-  }
+/* ---------- 顶部进度条 ---------- */
+.topbar{position:relative;padding-right:40px;}
+.progress-track{
+  height:3px;background:#161616;border-radius:2px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#00ff9d,#00c8ff);
+  box-shadow:0 0 12px rgba(0,255,157,.85);
+  transition:width .25s linear;
+}
+.gear{
+  position:absolute;top:-14px;right:0;
+  background:none;border:none;color:#555;font-size:20px;
+  padding:8px;cursor:pointer;line-height:1;
+}
+.gear:active{color:#aaa;}
 
-  /* 摸鱼专区 */
-  .fish-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
-  .fish-btn {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%);
-    color: #d81b60; border: none; padding: 14px 32px; border-radius: 30px;
-    font-size: 18px; font-weight: bold; cursor: pointer; 
-    box-shadow: 0 6px 20px rgba(255, 154, 158, 0.4);
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  .fish-btn:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(255, 154, 158, 0.4); }
-  .fish-count-text { font-size: 13px; color: #ff9a9e; margin-top: 12px; font-weight: 500; }
+/* ---------- 主体 ---------- */
+.main{
+  flex:1;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:14px;
+  min-height:0;
+}
+.term-line{
+  font-size:12px;color:#5a5a5a;letter-spacing:2px;height:16px;
+}
+.status-pill{
+  display:inline-flex;align-items:center;
+  padding:7px 18px;border-radius:999px;
+  background:#141414;border:1px solid #232323;
+  font-size:13px;color:#b0b0b0;
+  transition:all .25s;
+  max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.status-pill[data-status="working"]{color:var(--green);border-color:rgba(0,255,157,.35);background:rgba(0,255,157,.07);}
+.status-pill[data-status="break"]{color:var(--orange);border-color:rgba(255,154,107,.35);background:rgba(255,154,107,.07);}
+.status-pill[data-status="after"]{color:var(--pink);border-color:rgba(255,107,168,.35);background:rgba(255,107,168,.07);}
+.status-pill[data-status="off"]{color:#7fd6ff;border-color:rgba(127,214,255,.3);background:rgba(127,214,255,.06);}
 
-  .cheer-text { font-size: 15px; color: #d4b584; line-height: 1.6; max-width: 280px; min-height: 50px; font-weight: 500; }
-  
-  .top-bar { position: absolute; top: 20px; right: 20px; display: flex; gap: 15px; z-index: 60; }
-  .icon-btn { background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 8px; transition: 0.2s; }
-  .icon-btn:active { color: #4cd964; transform: scale(0.9); }
+.amount{
+  font-size:clamp(42px,13.5vw,70px);
+  font-weight:800;
+  color:var(--green);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-1.5px;
+  line-height:1.1;
+  text-shadow:0 0 22px rgba(0,255,157,.55),0 0 70px rgba(0,255,157,.22);
+  animation:breathe 2.6s ease-in-out infinite;
+  transition:opacity .3s;
+}
+.amount.frozen{
+  color:#3a3a3a;
+  text-shadow:none;
+  animation:none;
+}
+@keyframes breathe{
+  0%,100%{opacity:1;}
+  50%{opacity:.78;}
+}
+.amount-sub{
+  font-size:12px;color:#666;letter-spacing:1px;
+}
 
-  /* 设置面板 */
-  .settings-panel {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(17, 17, 17, 0.98); z-index: 100; padding: 30px 24px; display: flex; flex-direction: column;
-    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
-  }
-  .settings-panel.show { transform: translateY(0); }
-  .settings-title { font-size: 22px; font-weight: bold; margin-bottom: 20px; text-align: left; color: #fff; }
-  .input-group { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 14px; border-radius: 12px; margin-bottom: 10px; }
-  .input-group label { font-size: 14px; color: #aaa; }
-  .input-group input { width: 120px; padding: 8px; border-radius: 8px; border: 1px solid #444; background: #111; color: #4cd964; font-size: 16px; text-align: right; font-weight: bold; outline: none; }
-  .save-btn { margin-top: 20px; background: #4cd964; color: #111; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 30px;}
-  .save-btn:active { opacity: 0.8; }
-  .holiday-notice { font-size: 12px; color: #f39c12; margin-top: -10px; margin-bottom: 20px; text-align: left;}
+/* ---------- 摸鱼区 ---------- */
+.fish-zone{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:14px 0 6px;
+}
+.fish-btn{
+  width:min(86vw,340px);
+  padding:17px 0;
+  border:none;border-radius:999px;
+  background:linear-gradient(135deg,#ff6ba8 0%,#ff9a6b 100%);
+  color:#fff;font-size:17px;font-weight:700;letter-spacing:1px;
+  box-shadow:0 8px 28px rgba(255,107,168,.35),0 0 0 1px rgba(255,255,255,.08) inset;
+  transition:transform .08s ease,box-shadow .2s;
+  cursor:pointer;
+}
+.fish-btn:active{
+  transform:scale(.955);
+  box-shadow:0 4px 16px rgba(255,107,168,.5);
+}
+.fish-count{font-size:12px;color:#5e5e5e;letter-spacing:.5px;}
 
-  /* 摸鱼飘字特效 */
-  .float-text {
-    position: fixed; color: #ff9a9e; font-weight: bold; font-size: 22px; pointer-events: none;
-    animation: floatUp 1s ease-out forwards; z-index: 999; text-shadow: 0 0 10px rgba(255,154,158,0.5);
-  }
-  @keyframes floatUp {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-  }
+/* ---------- 底部文案 ---------- */
+.quote{
+  text-align:center;
+  font-size:13px;color:#6b6b6b;line-height:1.6;
+  padding:6px 10px 0;
+  min-height:44px;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .4s;
+}
+
+/* ---------- 飘字 ---------- */
+.float-text{
+  position:fixed;
+  transform:translate(-50%,-50%);
+  font-size:20px;font-weight:800;
+  pointer-events:none;z-index:999;
+  animation:floatUp .95s cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes floatUp{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}
+  20%{opacity:1;transform:translate(-50%,-60%) scale(1.1);}
+  100%{opacity:0;transform:translate(-50%,-220%) scale(1.4);}
+}
+
+/* ---------- 设置面板 ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  opacity:0;pointer-events:none;transition:opacity .28s;z-index:100;
+  backdrop-filter:blur(3px);
+}
+.overlay.show{opacity:1;pointer-events:auto;}
+.panel{
+  position:fixed;left:0;right:0;bottom:0;z-index:101;
+  background:#0c0c0c;
+  border-radius:22px 22px 0 0;
+  border-top:1px solid #1d1d1d;
+  padding:12px 22px calc(env(safe-area-inset-bottom) + 22px);
+  transform:translateY(105%);
+  transition:transform .32s cubic-bezier(.32,.72,.28,1);
+  max-height:88vh;overflow-y:auto;
+}
+.panel.show{transform:translateY(0);}
+.panel-handle{
+  width:38px;height:4px;border-radius:2px;background:#2a2a2a;
+  margin:0 auto 18px;
+}
+.panel-title{
+  font-size:19px;font-weight:700;margin:0 0 20px;text-align:center;
+  letter-spacing:.5px;
+}
+.form{display:flex;flex-direction:column;gap:13px;}
+.row{display:flex;gap:12px;}
+.row .field{flex:1;}
+.field{display:flex;flex-direction:column;gap:7px;}
+.field span{font-size:12px;color:#6d6d6d;letter-spacing:.5px;}
+.field input{
+  background:#161616;border:1px solid #242424;border-radius:12px;
+  padding:13px 14px;color:#fff;font-size:16px;
+  font-variant-numeric:tabular-nums;
+  outline:none;transition:border-color .2s;
+  width:100%;
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus{border-color:rgba(0,255,157,.5);}
+.field input::placeholder{color:#3a3a3a;}
+.primary-btn{
+  width:100%;margin-top:22px;padding:17px 0;
+  border:none;border-radius:14px;
+  background:linear-gradient(135deg,#00ff9d,#00c8ff);
+  color:#04150e;font-size:17px;font-weight:800;letter-spacing:2px;
+  cursor:pointer;transition:transform .08s;
+}
+.primary-btn:active{transform:scale(.97);}
+.err{
+  color:#ff5c5c;font-size:12px;text-align:center;
+  height:16px;margin-top:6px;
+}
+
+/* ---------- 鸡汤 Toast ---------- */
+.toast{
+  position:fixed;left:50%;top:14%;
+  transform:translate(-50%,-16px);
+  background:rgba(20,20,20,.96);
+  border:1px solid #262626;
+  color:#d8d8d8;font-size:14px;line-height:1.6;
+  padding:16px 22px;border-radius:16px;
+  max-width:84vw;text-align:center;
+  opacity:0;pointer-events:none;z-index:200;
+  transition:opacity .35s,transform .35s;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
 </style>
 </head>
 <body>
 
-  <!-- 顶部进度条 -->
-  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+<div class="topbar">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <button class="gear" id="gearBtn" aria-label="设置">⚙️</button>
+</div>
 
-  <div class="top-bar">
-    <button class="icon-btn" id="openSettings">⚙️</button>
-  </div>
+<div class="main">
+  <div class="term-line" id="termLine"></div>
+  <div class="status-pill" id="statusPill" data-status="before">准备中…</div>
+  <div class="amount" id="amount">¥ 0.0000</div>
+  <div class="amount-sub" id="amountSub">今日已赚</div>
+</div>
 
-  <div class="main-view">
-    <div class="money-label">今日已赚 (元)</div>
-    <div class="money-display" id="moneyDisplay"><span>¥</span>0.00</div>
-    <div class="time-status" id="timeStatus">计算中...</div>
-    
-    <!-- 摸鱼打卡区 -->
-    <div class="fish-area">
-      <button class="fish-btn" id="fishBtn">🐟 摸鱼打卡</button>
-      <div class="fish-count-text">今日已带薪摸鱼 <span id="fishCount" style="font-size:16px; color:#ff9a9e;">0</span> 次</div>
+<div class="fish-zone">
+  <button class="fish-btn" id="fishBtn">🐟 摸鱼打卡</button>
+  <div class="fish-count" id="fishCount">今日已带薪摸鱼 0 次</div>
+</div>
+
+<div class="quote" id="quote">打工人的每一秒，都在发光。</div>
+
+<!-- 设置面板 -->
+<div class="overlay" id="overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-handle"></div>
+  <h2 class="panel-title" id="panelTitle">老板，你月薪多少？</h2>
+  <div class="form">
+    <label class="field">
+      <span>月薪（元）</span>
+      <input type="number" id="fSalary" inputmode="decimal" placeholder="10000">
+    </label>
+    <label class="field">
+      <span>每月工作天数</span>
+      <input type="number" id="fWorkDays" inputmode="numeric" placeholder="22">
+    </label>
+    <div class="row">
+      <label class="field"><span>上班时间</span><input type="time" id="fStart" value="09:00"></label>
+      <label class="field"><span>下班时间</span><input type="time" id="fEnd" value="18:00"></label>
     </div>
+    <div class="row">
+      <label class="field"><span>午休开始</span><input type="time" id="fLunchS" value="12:00"></label>
+      <label class="field"><span>午休结束</span><input type="time" id="fLunchE" value="13:00"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span>晚休开始（可选）</span><input type="time" id="fDinnerS"></label>
+      <label class="field"><span>晚休结束（可选）</span><input type="time" id="fDinnerE"></label>
+    </div>
+  </div>
+  <div class="err" id="errMsg"></div>
+  <button class="primary-btn" id="saveBtn">开启打工</button>
+</div>
 
-    <div class="cheer-text" id="cheerText">打工人的每一秒，都在为未来的自由铺路。</div>
-  </div>
-  
-  <!-- 设置面板 -->
-  <div class="settings-panel" id="settingsPanel">
-    <div class="settings-title" id="settingsTitle">⚙️ 薪资与时间设置</div>
-    <div class="holiday-notice" id="holidayNotice" style="display: none;"></div>
-    
-    <div class="input-group"><label>月薪 (元)</label><input type="number" id="salary" value="10000"></div>
-    <div class="input-group"><label>每月上班 (天)</label><input type="number" id="workDays" value="22"></div>
-    <div class="input-group"><label>上班时间</label><input type="time" id="startTime" value="09:00"></div>
-    <div class="input-group"><label>下班时间</label><input type="time" id="endTime" value="18:00"></div>
-    <div class="input-group"><label>午休开始</label><input type="time" id="lunchStart" value="12:00"></div>
-    <div class="input-group"><label>午休结束</label><input type="time" id="lunchEnd" value="13:00"></div>
-    
-    <button class="save-btn" id="closeSettings">保存并开始</button>
-  </div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // 注册 Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(console.warn); });
+(function(){
+'use strict';
+
+/* =========================================================
+   0. 基础工具
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const pad2 = n => String(n).padStart(2,'0');
+const fmtDate = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+/** 'HH:MM' -> 指定基准日期的 Date */
+function timeToDate(hhmm, base){
+  const [h,m] = hhmm.split(':').map(Number);
+  const d = new Date(base);
+  d.setHours(h||0, m||0, 0, 0);
+  return d;
+}
+
+/** 两个时间区间的重叠秒数 */
+function overlapSec(a1,a2,b1,b2){
+  const s = Math.max(a1.getTime(), b1.getTime());
+  const e = Math.min(a2.getTime(), b2.getTime());
+  return e > s ? (e - s) / 1000 : 0;
+}
+
+/* =========================================================
+   1. 节假日数据（离线内置，可后续换 Timor API 动态更新）
+   ========================================================= */
+// 放假日：日期 -> 节日名
+const HOLIDAYS = {
+  // ---- 2025 ----
+  '2025-01-01':'元旦',
+  '2025-01-28':'春节','2025-01-29':'春节','2025-01-30':'春节','2025-01-31':'春节',
+  '2025-02-01':'春节','2025-02-02':'春节','2025-02-03':'春节','2025-02-04':'春节',
+  '2025-04-04':'清明节','2025-04-05':'清明节','2025-04-06':'清明节',
+  '2025-05-01':'劳动节','2025-05-02':'劳动节','2025-05-03':'劳动节',
+  '2025-05-04':'劳动节','2025-05-05':'劳动节',
+  '2025-05-31':'端午节','2025-06-01':'端午节','2025-06-02':'端午节',
+  '2025-10-01':'国庆节','2025-10-02':'国庆节','2025-10-03':'国庆节','2025-10-04':'国庆节',
+  '2025-10-05':'国庆节','2025-10-06':'国庆节','2025-10-07':'国庆节','2025-10-08':'国庆节',
+};
+
+// 调休上班日：日期 -> 说明
+const MAKEUP_DAYS = {
+  '2025-01-26':'春节调休',
+  '2025-02-08':'春节调休',
+  '2025-04-27':'劳动节调休',
+  '2025-09-28':'国庆调休',
+  '2025-10-11':'国庆调休',
+};
+
+/**
+ * 节假日 API 兜底方案：
+ * 优先使用内置表；如需接 Timor API，把下面函数改成异步拉取后
+ * 写入 HOLIDAYS / MAKEUP_DAYS 再 render() 即可，失败静默降级为「仅判断周末」。
+ */
+async function syncHolidayFromAPI(year){
+  try{
+    const res = await fetch(`https://timor.tech/api/holiday/year/${year}`, {cache:'no-store'});
+    if(!res.ok) return false;
+    const data = await res.json();
+    if(!data || !data.holiday) return false;
+    for(const key in data.holiday){
+      const item = data.holiday[key];          // { holiday:true/false, name, date }
+      const d = `${year}-${key}`;
+      if(item.holiday) HOLIDAYS[d] = item.name;
+      else MAKEUP_DAYS[d] = item.name + '调休';
+    }
+    return true;
+  }catch(e){
+    return false;  // 断网 → 静默降级，核心计时不受影响
+  }
+}
+
+/* =========================================================
+   2. 二十四节气（21 世纪通用近似算法，误差 ≤1 天）
+   ========================================================= */
+const TERM_C = [5.4055,20.12,3.87,18.73,5.63,20.646,4.81,20.1,5.52,21.04,5.678,21.37,
+                7.108,22.83,7.5,23.13,7.646,23.042,8.318,23.438,7.438,22.36,7.18,21.94];
+const TERM_NAME = ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至',
+                   '小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
+
+function getSolarTerm(date){
+  const Y = date.getFullYear() % 100;
+  const L = Math.floor(Y / 4);
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  for(let i = 0; i < 24; i++){
+    if(Math.floor(i/2) + 1 !== m) continue;
+    const day = Math.floor(Y * 0.2422 + TERM_C[i]) - L;
+    if(day === d) return TERM_NAME[i];
+  }
+  return null;
+}
+
+/* =========================================================
+   3. 配置读写
+   ========================================================= */
+const CFG_KEY = 'dgr_cfg_v1';
+const DEFAULTS = {
+  salary: 0,
+  workDays: 22,
+  workStart: '09:00',
+  workEnd: '18:00',
+  lunchStart: '12:00',
+  lunchEnd: '13:00',
+  dinnerStart: '',
+  dinnerEnd: '',
+};
+
+let cfg = null;
+
+function loadCfg(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(CFG_KEY));
+    if(raw && typeof raw.salary === 'number' && raw.salary > 0) return Object.assign({}, DEFAULTS, raw);
+  }catch(e){}
+  return null;
+}
+function persistCfg(c){
+  try{ localStorage.setItem(CFG_KEY, JSON.stringify(c)); }catch(e){}
+}
+
+/* =========================================================
+   4. 核心计算引擎（时间戳差值法 —— 防后台杀进程的关键）
+   ========================================================= */
+function computeState(now, cfg){
+  const todayStr = fmtDate(now);
+  const holidayName = HOLIDAYS[todayStr] || '';
+  const makeupName  = MAKEUP_DAYS[todayStr] || '';
+  const isWeekend   = now.getDay() === 0 || now.getDay() === 6;
+
+  // 优先级：调休上班 > 法定节假日 > 周末 > 普通工作日
+  const isWorkday = makeupName ? true : (holidayName ? false : !isWeekend);
+
+  const daySalary = cfg.salary / (cfg.workDays || 22);
+
+  /* ---------- 非工作日 ---------- */
+  if(!isWorkday){
+    let pill;
+    if(holidayName)      pill = `${holidayName}快乐，搞什么钱，去玩！`;
+    else if(isWeekend)   pill = '周末快乐，搞什么钱，去玩！';
+    else                 pill = '今天休息，去玩！';
+    return {
+      status: 'off', earned: 0, progress: 1, daySalary,
+      pillText: pill, isWorkday: false, holidayName,
+    };
   }
 
-  // --- 状态与数据 ---
-  const elMoney = document.getElementById('moneyDisplay');
-  const elStatus = document.getElementById('timeStatus');
-  const elCheer = document.getElementById('cheerText');
-  const elProgress = document.getElementById('progressBar');
-  const panel = document.getElementById('settingsPanel');
-  const elFishCount = document.getElementById('fishCount');
+  /* ---------- 构建今日时间轴 ---------- */
+  const start = timeToDate(cfg.workStart, now);
+  const end   = timeToDate(cfg.workEnd,   now);
 
-  const inputs = {
-    salary: document.getElementById('salary'), workDays: document.getElementById('workDays'),
-    start: document.getElementById('startTime'), end: document.getElementById('endTime'),
-    lStart: document.getElementById('lunchStart'), lEnd: document.getElementById('lunchEnd')
+  const breaks = [];
+  if(cfg.lunchStart && cfg.lunchEnd){
+    breaks.push([timeToDate(cfg.lunchStart, now), timeToDate(cfg.lunchEnd, now)]);
+  }
+  if(cfg.dinnerStart && cfg.dinnerEnd){
+    breaks.push([timeToDate(cfg.dinnerStart, now), timeToDate(cfg.dinnerEnd, now)]);
+  }
+
+  // 今日总计薪秒数
+  let totalSec = (end - start) / 1000;
+  for(const [bs, be] of breaks) totalSec -= overlapSec(start, end, bs, be);
+  if(totalSec <= 0) totalSec = 1;   // 防御：异常配置兜底
+
+  /* ---------- 状态判定 ---------- */
+  let status;
+  if(now < start)        status = 'before';
+  else if(now >= end)    status = 'after';
+  else if(breaks.some(([bs,be]) => now >= bs && now < be)) status = 'break';
+  else                   status = 'working';
+
+  /* ---------- 已工作秒数（纯时间戳推导，无累加） ---------- */
+  let workedSec = 0;
+  if(now >= start){
+    const cut = now < end ? now : end;          // 不越过下班时间
+    workedSec = (cut - start) / 1000;
+    for(const [bs, be] of breaks){
+      workedSec -= overlapSec(start, cut, bs, be);   // 扣掉已度过的休息时段
+    }
+  }
+  workedSec = Math.max(0, Math.min(workedSec, totalSec));
+
+  /* ---------- 金额 ---------- */
+  const perSec = daySalary / totalSec;
+  const earned = (status === 'after') ? daySalary : workedSec * perSec;
+  const progress = (status === 'after') ? 1 : Math.min(1, workedSec / totalSec);
+
+  /* ---------- 状态胶囊文案 ---------- */
+  let pillText;
+  if(status === 'before'){
+    pillText = '还没到上班时间，再躺会儿';
+  }else if(status === 'after'){
+    pillText = '今日已下班，快逃！';
+  }else if(status === 'break'){
+    pillText = '干饭时间，带薪休息';
+  }else{
+    const left = Math.max(0, Math.floor((end - now) / 1000));
+    const h = Math.floor(left / 3600);
+    const m = Math.floor((left % 3600) / 60);
+    pillText = h > 0 ? `距离下班还有 ${h}小时${m}分` : `距离下班还有 ${m}分`;
+  }
+
+  return {
+    status, earned, progress, daySalary, pillText,
+    isWorkday: true, totalSec, workedSec, perSec,
+    isMakeup: !!makeupName,
+  };
+}
+
+/* =========================================================
+   5. 文案系统
+   ========================================================= */
+const FISH_QUOTES = [
+  '带薪拉屎，赚翻了',
+  '生产队的驴都不敢这么歇',
+  '摸鱼一时爽，一直摸鱼一直爽',
+  '老板看不见的地方，就是自由',
+  '这不是摸鱼，这是带薪思考人生',
+  '工资照发，快乐加倍',
+  '我在工位上，但我的灵魂在马尔代夫',
+  '摸鱼是打工人最后的倔强',
+  '别慌，工资还在跳',
+  '认真工作是为了生活，摸鱼也是为了生活',
+];
+
+const SOUPS = [
+  '你不是在打工，你是在为自己的未来攒路费。',
+  '今天也要做一只快乐的、有工资的咸鱼。',
+  '工资到账的那一刻，所有的早起都值得。',
+  '别人的天花板，是你的起跑线，慢慢来。',
+  '生活很苦，但你的工资在涨，这就够了。',
+  '不着急，你走的每一步都算数。',
+];
+
+/** 时段问候 */
+function timeQuote(h){
+  if(h < 9)  return '还没上班，先躺一会儿，闹钟还没响。';
+  if(h < 10) return '刚泡好咖啡，今天也是带薪拉屎的一天。';
+  if(h < 12) return '上午的工资，正在稳步到账。';
+  if(h < 13) return '干饭时间，带薪休息，这不叫摸鱼，这叫回血。';
+  if(h < 15) return '最难熬的下午来了，深呼吸，工资在跳。';
+  if(h < 17) return '摸一会儿是一会儿，反正工资照算。';
+  if(h < 18) return '还有10分钟，准备好冲刺下班。';
+  return '下班了，快逃。';
+}
+
+function pickQuote(now, s){
+  if(s.status === 'off')    return s.holidayName ? `${s.holidayName}快乐，搞什么钱，去玩！` : '周末快乐，搞什么钱，去玩！';
+  if(s.status === 'before') return '还没上班，先躺一会儿。';
+  if(s.status === 'after')  return '今日已下班，快逃！';
+  return timeQuote(now.getHours());
+}
+
+/* =========================================================
+   6. 摸鱼计数（每日 0 点自动重置）
+   ========================================================= */
+function getFishCount(){
+  try{
+    const raw = JSON.parse(localStorage.getItem('dgr_fish') || '{}');
+    if(raw.date === fmtDate(new Date())) return raw.count || 0;
+  }catch(e){}
+  return 0;
+}
+function addFishCount(){
+  const count = getFishCount() + 1;
+  try{
+    localStorage.setItem('dgr_fish', JSON.stringify({date: fmtDate(new Date()), count}));
+  }catch(e){}
+  return count;
+}
+
+/* =========================================================
+   7. DOM 引用
+   ========================================================= */
+const el = {
+  progressFill: $('progressFill'),
+  statusPill:   $('statusPill'),
+  amount:       $('amount'),
+  amountSub:    $('amountSub'),
+  termLine:     $('termLine'),
+  fishBtn:      $('fishBtn'),
+  fishCount:    $('fishCount'),
+  quote:        $('quote'),
+  gearBtn:      $('gearBtn'),
+  overlay:      $('overlay'),
+  panel:        $('panel'),
+  panelTitle:   $('panelTitle'),
+  saveBtn:      $('saveBtn'),
+  errMsg:       $('errMsg'),
+  toast:        $('toast'),
+  // 表单
+  fSalary:   $('fSalary'),
+  fWorkDays: $('fWorkDays'),
+  fStart:    $('fStart'),
+  fEnd:      $('fEnd'),
+  fLunchS:   $('fLunchS'),
+  fLunchE:   $('fLunchE'),
+  fDinnerS:  $('fDinnerS'),
+  fDinnerE:  $('fDinnerE'),
+};
+
+/* =========================================================
+   8. 渲染
+   ========================================================= */
+let currentQuote = '';
+let lastQuoteAt  = 0;
+
+function render(){
+  if(!cfg) return;
+  const now = new Date();
+  const s = computeState(now, cfg);
+
+  // 顶部进度条
+  el.progressFill.style.width = (s.progress * 100).toFixed(2) + '%';
+
+  // 金额（精确到小数点后 4 位）
+  el.amount.textContent = '¥ ' + s.earned.toFixed(4);
+  el.amount.classList.toggle('frozen', s.status !== 'working');
+
+  // 状态胶囊
+  el.statusPill.textContent = s.pillText;
+  el.statusPill.dataset.status = s.status;
+
+  // 副标题
+  if(s.status === 'after'){
+    el.amountSub.textContent = `今日总收入 ¥${s.daySalary.toFixed(2)}`;
+  }else if(s.status === 'off'){
+    el.amountSub.textContent = '今天不用上班，去玩！';
+  }else{
+    el.amountSub.textContent = '今日已赚';
+  }
+
+  // 节气
+  const term = getSolarTerm(now);
+  el.termLine.textContent = term ? `今日 ${term}` : '';
+
+  // 底部文案：每 30 秒或状态切换时刷新
+  const t = Date.now();
+  if(t - lastQuoteAt > 30000 || !currentQuote){
+    currentQuote = pickQuote(now, s);
+    el.quote.textContent = currentQuote;
+    lastQuoteAt = t;
+  }
+}
+
+/* =========================================================
+   9. 摸鱼交互
+   ========================================================= */
+function spawnFloat(text, x, y){
+  const node = document.createElement('div');
+  node.className = 'float-text';
+  node.textContent = text;
+  node.style.left = x + 'px';
+  node.style.top  = y + 'px';
+  // 绿 / 粉随机
+  node.style.color = Math.random() > 0.5 ? '#00ff9d' : '#ff6ba8';
+  node.style.textShadow = `0 0 14px ${node.style.color}`;
+  document.body.appendChild(node);
+  setTimeout(() => node.remove(), 950);
+}
+
+el.fishBtn.addEventListener('click', function(e){
+  // 1. 计数
+  const count = addFishCount();
+  el.fishCount.textContent = `今日已带薪摸鱼 ${count} 次`;
+
+  // 2. 震动（Android 生效，iOS Safari 不支持 vibrate，属正常降级）
+  if(navigator.vibrate) navigator.vibrate(30);
+
+  // 3. 飘字：优先用点击坐标，兜底用按钮中心
+  const rect = el.fishBtn.getBoundingClientRect();
+  const x = (e.clientX || rect.left + rect.width / 2);
+  const y = (e.clientY || rect.top + rect.height / 2);
+  spawnFloat('+1 摸鱼', x, y - 10);
+
+  // 4. 切换黑话
+  currentQuote = FISH_QUOTES[Math.floor(Math.random() * FISH_QUOTES.length)];
+  el.quote.textContent = currentQuote;
+  lastQuoteAt = Date.now();
+});
+
+function refreshFishCount(){
+  el.fishCount.textContent = `今日已带薪摸鱼 ${getFishCount()} 次`;
+}
+
+/* =========================================================
+   10. 设置面板
+   ========================================================= */
+let isFirstRun = false;
+
+function fillForm(c){
+  const v = Object.assign({}, DEFAULTS, c || {});
+  el.fSalary.value   = v.salary || '';
+  el.fWorkDays.value = v.workDays || 22;
+  el.fStart.value    = v.workStart || '09:00';
+  el.fEnd.value      = v.workEnd   || '18:00';
+  el.fLunchS.value   = v.lunchStart || '12:00';
+  el.fLunchE.value   = v.lunchEnd   || '13:00';
+  el.fDinnerS.value  = v.dinnerStart || '';
+  el.fDinnerE.value  = v.dinnerEnd   || '';
+  el.errMsg.textContent = '';
+}
+
+function openPanel(first){
+  isFirstRun = !!first;
+  fillForm(cfg);
+  el.panelTitle.textContent = first ? '老板，你月薪多少？' : '设置';
+  el.saveBtn.textContent    = first ? '开启打工' : '保存并开始';
+  el.overlay.classList.add('show');
+  el.panel.classList.add('show');
+}
+
+function closePanel(){
+  el.overlay.classList.remove('show');
+  el.panel.classList.remove('show');
+}
+
+el.gearBtn.addEventListener('click', () => openPanel(false));
+el.overlay.addEventListener('click', () => { if(!isFirstRun) closePanel(); });
+
+el.saveBtn.addEventListener('click', function(){
+  const salary   = parseFloat(el.fSalary.value);
+  const workDays = parseInt(el.fWorkDays.value, 10) || 22;
+  const workStart = el.fStart.value || '09:00';
+  const workEnd   = el.fEnd.value   || '18:00';
+
+  if(!salary || salary <= 0){
+    el.errMsg.textContent = '先填个月薪吧，打工人 😢';
+    return;
+  }
+  if(timeToDate(workEnd, new Date()) <= timeToDate(workStart, new Date())){
+    el.errMsg.textContent = '下班时间得晚于上班时间哦';
+    return;
+  }
+
+  const newCfg = {
+    salary,
+    workDays,
+    workStart,
+    workEnd,
+    lunchStart: el.fLunchS.value || '',
+    lunchEnd:   el.fLunchE.value || '',
+    dinnerStart: el.fDinnerS.value || '',
+    dinnerEnd:   el.fDinnerE.value || '',
   };
 
-  // 缓存配置
-  const savedConfig = JSON.parse(localStorage.getItem('workerClockConfig'));
-  if (savedConfig) {
-    for (let key in inputs) { if (savedConfig[key]) inputs[key].value = savedConfig[key]; }
-  } else {
-    // 首次打开，自动弹出设置
-    setTimeout(() => panel.classList.add('show'), 500);
+  // 晚休必须成对出现
+  if((!!newCfg.dinnerStart) !== (!!newCfg.dinnerEnd)){
+    el.errMsg.textContent = '晚休时间需要同时填写开始和结束';
+    return;
   }
 
-  // --- 摸鱼逻辑 ---
-  let fishCount = parseInt(localStorage.getItem('fishCount')) || 0;
-  let fishDate = localStorage.getItem('fishDate');
-  const todayStr = new Date().toDateString();
-  if (fishDate !== todayStr) {
-    fishCount = 0; localStorage.setItem('fishDate', todayStr); localStorage.setItem('fishCount', 0);
+  cfg = newCfg;
+  persistCfg(cfg);
+  isFirstRun = false;
+  closePanel();
+
+  lastQuoteAt = 0;
+  render();
+});
+
+/* =========================================================
+   11. 每日首开鸡汤
+   ========================================================= */
+function checkDailySoup(){
+  const today = fmtDate(new Date());
+  let last = '';
+  try{ last = localStorage.getItem('dgr_lastopen') || ''; }catch(e){}
+  if(last === today) return;
+
+  try{ localStorage.setItem('dgr_lastopen', today); }catch(e){}
+
+  const soup = SOUPS[Math.floor(Math.random() * SOUPS.length)];
+  el.toast.textContent = soup;
+  el.toast.classList.add('show');
+  setTimeout(() => el.toast.classList.remove('show'), 4200);
+}
+
+/* =========================================================
+   12. 启动
+   ========================================================= */
+function boot(){
+  cfg = loadCfg();
+  refreshFishCount();
+
+  if(!cfg){
+    // 首次打开：直接弹极简设置卡片，无登录无注册
+    openPanel(true);
+  }else{
+    render();
+    checkDailySoup();
   }
-  elFishCount.textContent = fishCount;
 
-  const fishMessages = [
-    "小摸一下，带薪喝水。", "带薪拉屎，赚翻了！", "老板看不见，摸鱼最安全。", 
-    "摸鱼一时爽，一直摸鱼一直爽。", "你的工资里，有一半是受气费，另一半是摸鱼费。",
-    "生产队的驴都不敢这么歇！", "你是在摸鱼，还是在带薪思考人生？"
-  ];
+  // 主循环：仅驱动渲染，金额永远由时间戳重算 —— 掉帧/被节流都不会导致误差
+  setInterval(render, 100);
 
-  document.getElementById('fishBtn').addEventListener('click', (e) => {
-    fishCount++;
-    elFishCount.textContent = fishCount;
-    localStorage.setItem('fishCount', fishCount);
-
-    // 震动反馈 (不同频率)
-    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-
-    // 飘字特效
-    const floatEl = document.createElement('div');
-    floatEl.className = 'float-text';
-    floatEl.textContent = '+1 摸鱼';
-    
-    const rect = e.target.getBoundingClientRect();
-    floatEl.style.left = (rect.left + rect.width / 2 - 30) + 'px';
-    floatEl.style.top = (rect.top - 10) + 'px';
-    document.body.appendChild(floatEl);
-    setTimeout(() => floatEl.remove(), 1000);
-
-    // 每次摸鱼更换随机文案
-    elCheer.textContent = fishMessages[Math.floor(Math.random() * fishMessages.length)];
+  // 切回前台立即刷新（解决息屏 / 切后台回来金额滞后）
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden){
+      render();
+      refreshFishCount();   // 跨零点后摸鱼次数自动归零
+    }
   });
+  window.addEventListener('focus', render);
+  window.addEventListener('pageshow', render);
 
-  // --- 时间与计算逻辑 ---
-  function timeToMinutes(timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + m;
-  }
-
-  // 判断节假日/节气 (使用免费公开接口 + 本地缓存，防断网)
-  let isHoliday = false;
-  let holidayName = "";
-  async function checkHoliday() {
-    const date = new Date();
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-    const cached = localStorage.getItem('holiday_' + dateStr);
-    
-    if (cached) {
-      const data = JSON.parse(cached);
-      isHoliday = data.isHoliday; holidayName = data.name;
-      return;
+  // 跨零点检测
+  let lastDay = fmtDate(new Date());
+  setInterval(function(){
+    const d = fmtDate(new Date());
+    if(d !== lastDay){
+      lastDay = d;
+      refreshFishCount();
+      lastQuoteAt = 0;
+      render();
     }
+  }, 5000);
 
-    try {
-      const res = await fetch(`https://timor.tech/api/holiday/info/${dateStr}`);
-      const data = await res.json();
-      if (data.code === 0) {
-        isHoliday = data.type.type !== 0 && data.type.type !== 3; // 1是周末，2是节日，3是调休上班
-        holidayName = data.type.name || (isHoliday ? '周末' : '');
-        
-        // 节气检测(只判断当天是否有节气提示)
-        if (data.holiday && data.holiday.name) holidayName = data.holiday.name;
-        
-        localStorage.setItem('holiday_' + dateStr, JSON.stringify({isHoliday, name: holidayName}));
-      }
-    } catch (e) {
-      // 断网时默认按周末判断
-      const day = date.getDay();
-      isHoliday = (day === 0 || day === 6);
-      holidayName = isHoliday ? "周末" : "";
-    }
-  }
+  // 节假日数据异步更新（失败静默降级为「仅判断周末」）
+  syncHolidayFromAPI(new Date().getFullYear()).then(ok => { if(ok) render(); });
+  syncHolidayFromAPI(new Date().getFullYear() + 1);
+}
 
-  let timer = null;
-  let lastCheerTime = 0;
-  const cheers = {
-    morning: ["刚泡好咖啡，今天也是带薪拉屎的一天。", "只要我不抬头，工作就找不到我。", "距离午饭还有一会，稳住。"],
-    afternoon: ["最难熬的下午来了，深呼吸，工资在跳。", "下午三点，喝杯水，提提神。", "快熬过最累的时候了，钱一分没少赚。"],
-    evening: ["准备冲刺下班！", "收拾一下桌面，体面地结束今天。", "马上就自由了，再忍忍。"],
-    lunch: ["干饭时间，带薪休息最香。", "吃饱喝足，下午再战。", "午休是为了更好的摸鱼。"],
-    offwork: ["今日已下班，快逃！", "下班不积极，思想有问题。", "带薪的一天结束了，明天再来。"],
-    weekend: ["周末/节假日快乐，搞什么钱，去玩！", "今天休息，别想工作的事。", "不上班的日子，连空气都是甜的。"]
-  };
+boot();
 
-  async function updateData() {
-    await checkHoliday(); // 确保状态最新
-
-    const now = new Date();
-    const salary = parseFloat(inputs.salary.value) || 0;
-    const workDays = parseFloat(inputs.workDays.value) || 22;
-    const startM = timeToMinutes(inputs.start.value);
-    const endM = timeToMinutes(inputs.end.value);
-    const lStartM = timeToMinutes(inputs.lStart.value);
-    const lEndM = timeToMinutes(inputs.lEnd.value);
-    const currentM = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-
-    // 每日总工作分钟数
-    let totalWorkMinutes = (endM - startM) - (lEndM - lStartM);
-    if (totalWorkMinutes <= 0) totalWorkMinutes = 1;
-
-    const dailyPay = salary / workDays;
-    const payPerMinute = dailyPay / totalWorkMinutes;
-
-    let earned = 0, statusText = "", state = "", progressPct = 0;
-
-    if (isHoliday) {
-      earned = 0; 
-      statusText = holidayName ? `${holidayName}快乐` : "今日休息";
-      state = "weekend";
-      progressPct = 100;
-    } else if (currentM < startM) {
-      earned = 0; statusText = "还没到上班时间"; state = "morning";
-    } else if (currentM >= startM && currentM < lStartM) {
-      // 上午
-      const workedM = currentM - startM;
-      earned = workedM * payPerMinute;
-      const remainM = endM - currentM;
-      statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
-      state = "morning";
-      progressPct = (workedM / totalWorkMinutes) * 100;
-    } else if (currentM >= lStartM && currentM < lEndM) {
-      // 午休
-      const workedM = lStartM - startM;
-      earned = workedM * payPerMinute;
-      statusText = "干饭时间，带薪休息"; state = "lunch";
-      progressPct = (workedM / totalWorkMinutes) * 100;
-    } else if (currentM >= lEndM && currentM < endM) {
-      // 下午
-      const workedM = (lStartM - startM) + (currentM - lEndM);
-      earned = workedM * payPerMinute;
-      const remainM = endM - currentM;
-      statusText = `距离下班 ${Math.floor(remainM/60)}小时${Math.floor(remainM%60)}分`;
-      state = "evening";
-      progressPct = (workedM / totalWorkMinutes) * 100;
-    } else {
-      // 下班
-      earned = dailyPay; statusText = "今日已下班，快逃！"; state = "offwork";
-      progressPct = 100;
-    }
-
-    elMoney.innerHTML = `<span>¥</span>${earned.toFixed(4)}`;
-    elStatus.textContent = statusText;
-    elProgress.style.width = `${Math.min(progressPct, 100)}%`;
-
-    if (Date.now() - lastCheerTime > 30000) {
-      if (state !== "weekend" && state !== "offwork") {
-        elCheer.textContent = cheers[state][Math.floor(Math.random() * cheers[state].length)];
-      } else if (lastCheerTime === 0) {
-         elCheer.textContent = cheers[state][Math.floor(Math.random() * cheers[state].length)];
-      }
-      lastCheerTime = Date.now();
-    }
-  }
-
-  function startTimer() {
-    if (timer) clearInterval(timer);
-    updateData();
-    timer = setInterval(updateData, 1000);
-  }
-
-  // 设置面板交互
-  document.getElementById('openSettings').addEventListener('click', () => {
-    document.getElementById('settingsTitle').textContent = "⚙️ 薪资与时间设置";
-    panel.classList.add('show');
-  });
-
-  document.getElementById('closeSettings').addEventListener('click', () => {
-    const config = {};
-    for (let key in inputs) config[key] = inputs[key].value;
-    localStorage.setItem('workerClockConfig', JSON.stringify(config));
-    
-    panel.classList.remove('show');
-    lastCheerTime = 0; // 强制刷新文案
-    startTimer();
-  });
-
-  startTimer();
+})();
 </script>
 </body>
 </html>
