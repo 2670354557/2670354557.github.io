@@ -1,17 +1,16 @@
 {
-  "name": "上班鼓励器",
-  "short_name": "鼓励器",
-  "description": "上班累了点一下，随机给自己一句鼓励",
+  "name": "打工人时钟",
+  "short_name": "打工人",
+  "description": "看着工资跳动的摸鱼神器",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#4cd964",
   "orientation": "portrait",
-  "background_color": "#fdf6e3",
-  "theme_color": "#ff8c42",
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzExMTExMSIvPjx0ZXh0IHg9IjI1NiIgeT0iMzAwIiBmb250LXNpemU9IjIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSxhcHBsZS1jb2xvci1lbW9qaSIgZmlsbD0iIzRjZDk2NCI+8J+SsDwvdGV4dD48L3N2Zz4=",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
