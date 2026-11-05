@@ -1,0 +1,19 @@
+{
+  "name": "上班鼓励器",
+  "short_name": "鼓励器",
+  "description": "上班累了点一下，随机给自己一句鼓励",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf6e3",
+  "theme_color": "#ff8c42",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
